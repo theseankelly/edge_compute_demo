@@ -18,6 +18,24 @@ endif()
 # find dependencies
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
+find_package(sensor_msgs REQUIRED)
+find_package(lifecycle_msgs REQUIRED)
+find_package(ifm3d_ros2 REQUIRED)
+find_package(PCL REQUIRED COMPONENTS common io)
+
+include_directories(${PCL_INCLUDE_DIRS})
+
+add_executable(compute_median_depth src/compute_median_depth.cpp)
+ament_target_dependencies(compute_median_depth
+  rclcpp
+  sensor_msgs
+  lifecycle_msgs
+  ifm3d_ros2
+)
+
+install(TARGETS
+  compute_median_depth
+  DESTINATION lib/${PROJECT_NAME})
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
