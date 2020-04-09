@@ -22,27 +22,21 @@ public:
     subscription_ = this->create_subscription<sensor_msgs::msg::Image>(
       "/camera/xyz_image",
       rclcpp::SensorDataQoS(),
-      std::bind(
-        &ComputeMeanDepth::cloud_callback,
-        this,
-        std::placeholders::_1));
+      [this](sensor_msgs::msg::Image::SharedPtr msg) {
+        auto cloud = cv_bridge::toCvShare(msg);
+        cv::Mat xyz[3];
+        cv::split(cloud->image, xyz);
+        cv::Scalar mean_depth_value = cv::mean(xyz[0]);
+
+        RCLCPP_INFO(this->get_logger(), "Got a pointcloud (%d, %d, %d) mean_depth = %f!",
+          cloud->image.rows, cloud->image.cols, cloud->image.channels(), mean_depth_value[0]);
+
+        auto message = std_msgs::msg::Float64();
+        message.data = mean_depth_value[0];
+        this->publisher_->publish(message);
+      });
   }
 private:
-  void cloud_callback(const sensor_msgs::msg::Image::SharedPtr msg) const
-  {
-    auto cloud = cv_bridge::toCvShare(msg);
-    cv::Mat xyz[3];
-    cv::split(cloud->image, xyz);
-    cv::Scalar mean_depth_value = cv::mean(xyz[0]);
-
-    RCLCPP_INFO(this->get_logger(), "Got a pointcloud (%d, %d, %d) mean_depth = %f!",
-      cloud->image.rows, cloud->image.cols, cloud->image.channels(), mean_depth_value[0]);
-
-    auto message = std_msgs::msg::Float64();
-    message.data = mean_depth_value[0];
-    publisher_->publish(message);
-  }
-
   rclcpp::Subscription<sensor_msgs::msg::Image>::SharedPtr subscription_;
   rclcpp::Publisher<std_msgs::msg::Float64>::SharedPtr publisher_;
 };
