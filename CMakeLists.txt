@@ -24,7 +24,11 @@ find_package(lifecycle_msgs REQUIRED)
 find_package(cv_bridge REQUIRED)
 find_package(ifm3d_ros2 REQUIRED)
 find_package(PCL REQUIRED COMPONENTS common io)
-
+find_package(ifm3d 0.17.0 CONFIG REQUIRED COMPONENTS
+  camera
+  framegrabber
+  image
+  )
 include_directories(${PCL_INCLUDE_DIRS})
 
 add_executable(compute_mean_depth src/compute_mean_depth.cpp)
@@ -35,6 +39,11 @@ ament_target_dependencies(compute_mean_depth
   lifecycle_msgs
   cv_bridge
   ifm3d_ros2
+)
+target_link_libraries(compute_mean_depth
+  ifm3d::camera
+  ifm3d::framegrabber
+  ifm3d::image
 )
 
 install(TARGETS
