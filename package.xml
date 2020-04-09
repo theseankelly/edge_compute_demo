@@ -10,8 +10,10 @@
   <buildtool_depend>ament_cmake</buildtool_depend>
 
   <depend>rclcpp</depend>
+  <depend>std_msgs</depend>
   <depend>sensor_msgs</depend>
   <depend>lifecycle_msgs</depend>
+  <depend>cv_bridge</depend>
   <depend>ifm3d_ros2</depend>
 
   <test_depend>ament_lint_auto</test_depend>

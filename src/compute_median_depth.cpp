@@ -1,7 +1,13 @@
+#include <string>
+#include <functional>
+
 #include "rclcpp/rclcpp.hpp"
+#include "std_msgs/msg/float64.hpp"
 #include "sensor_msgs/msg/point_cloud2.hpp"
+#include "sensor_msgs/msg/image.hpp"
 #include "ifm3d_ros2/camera_node.hpp"
 #include "lifecycle_msgs/msg/transition.hpp"
+#include "cv_bridge/cv_bridge.h"
 
 /*
  * Helper node which subscribes point clouds and publishes the median depth
@@ -12,8 +18,9 @@ public:
   ComputeMedianDepth()
   : Node("compute_median_depth")
   {
-    subscription_ = this->create_subscription<sensor_msgs::msg::PointCloud2>(
-      "/camera/cloud",
+    publisher_ = this->create_publisher<std_msgs::msg::Float64>("mean_depth", 10);
+    subscription_ = this->create_subscription<sensor_msgs::msg::Image>(
+      "/camera/xyz_image",
       rclcpp::SensorDataQoS(),
       std::bind(
         &ComputeMedianDepth::cloud_callback,
@@ -21,14 +28,23 @@ public:
         std::placeholders::_1));
   }
 private:
-  void cloud_callback(const sensor_msgs::msg::PointCloud2::SharedPtr msg) const
+  void cloud_callback(const sensor_msgs::msg::Image::SharedPtr msg) const
   {
-    // TODO: Actually compute and publish the median depth
-    RCLCPP_INFO(this->get_logger(), "Got a pointcloud (%d, %d)!",
-      msg->height, msg->width);
+    auto cloud = cv_bridge::toCvShare(msg);
+    cv::Mat xyz[3];
+    cv::split(cloud->image, xyz);
+    cv::Scalar mean_depth_value = cv::mean(xyz[0]);
+
+    RCLCPP_INFO(this->get_logger(), "Got a pointcloud (%d, %d, %d) median_depth = %f!",
+      cloud->image.rows, cloud->image.cols, cloud->image.channels(), type.c_str());
+
+    auto message = std_msgs::msg::Float64();
+    message.data = mean_depth_value[0];
+    publisher_->publish(message);
   }
 
-  rclcpp::Subscription<sensor_msgs::msg::PointCloud2>::SharedPtr subscription_;
+  rclcpp::Subscription<sensor_msgs::msg::Image>::SharedPtr subscription_;
+  rclcpp::Publisher<std_msgs::msg::Float64>::SharedPtr publisher_;
 };
 
 int main(int argc, char **argv)
