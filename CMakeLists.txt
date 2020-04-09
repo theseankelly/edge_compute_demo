@@ -27,8 +27,8 @@ find_package(PCL REQUIRED COMPONENTS common io)
 
 include_directories(${PCL_INCLUDE_DIRS})
 
-add_executable(compute_median_depth src/compute_median_depth.cpp)
-ament_target_dependencies(compute_median_depth
+add_executable(compute_mean_depth src/compute_mean_depth.cpp)
+ament_target_dependencies(compute_mean_depth
   rclcpp
   std_msgs
   sensor_msgs
@@ -38,7 +38,7 @@ ament_target_dependencies(compute_median_depth
 )
 
 install(TARGETS
-  compute_median_depth
+  compute_mean_depth
   DESTINATION lib/${PROJECT_NAME})
 
 if(BUILD_TESTING)

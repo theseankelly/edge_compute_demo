@@ -10,20 +10,20 @@
 #include "cv_bridge/cv_bridge.h"
 
 /*
- * Helper node which subscribes point clouds and publishes the median depth
+ * Helper node which subscribes point clouds and publishes the mean depth
  */
-class ComputeMedianDepth: public rclcpp::Node
+class ComputeMeanDepth: public rclcpp::Node
 {
 public:
-  ComputeMedianDepth()
-  : Node("compute_median_depth")
+  ComputeMeanDepth()
+  : Node("compute_mean_depth")
   {
     publisher_ = this->create_publisher<std_msgs::msg::Float64>("mean_depth", 10);
     subscription_ = this->create_subscription<sensor_msgs::msg::Image>(
       "/camera/xyz_image",
       rclcpp::SensorDataQoS(),
       std::bind(
-        &ComputeMedianDepth::cloud_callback,
+        &ComputeMeanDepth::cloud_callback,
         this,
         std::placeholders::_1));
   }
@@ -35,8 +35,8 @@ private:
     cv::split(cloud->image, xyz);
     cv::Scalar mean_depth_value = cv::mean(xyz[0]);
 
-    RCLCPP_INFO(this->get_logger(), "Got a pointcloud (%d, %d, %d) median_depth = %f!",
-      cloud->image.rows, cloud->image.cols, cloud->image.channels(), type.c_str());
+    RCLCPP_INFO(this->get_logger(), "Got a pointcloud (%d, %d, %d) mean_depth = %f!",
+      cloud->image.rows, cloud->image.cols, cloud->image.channels(), mean_depth_value[0]);
 
     auto message = std_msgs::msg::Float64();
     message.data = mean_depth_value[0];
@@ -56,8 +56,8 @@ int main(int argc, char **argv)
 
   auto camera = std::make_shared<ifm3d_ros2::CameraNode>(options);
   exec.add_node(camera->get_node_base_interface());
-  auto compute_median_depth = std::make_shared<ComputeMedianDepth>();
-  exec.add_node(compute_median_depth);
+  auto compute_mean_depth = std::make_shared<ComputeMeanDepth>();
+  exec.add_node(compute_mean_depth);
 
   // Activate the camera (a managed node)
   //
