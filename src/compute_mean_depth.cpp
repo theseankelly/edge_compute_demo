@@ -3,7 +3,6 @@
 
 #include "rclcpp/rclcpp.hpp"
 #include "std_msgs/msg/float64.hpp"
-#include "sensor_msgs/msg/point_cloud2.hpp"
 #include "sensor_msgs/msg/image.hpp"
 #include "ifm3d_ros2/camera_node.hpp"
 #include "lifecycle_msgs/msg/transition.hpp"
