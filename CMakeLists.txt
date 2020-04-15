@@ -22,8 +22,9 @@ find_package(std_msgs REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(lifecycle_msgs REQUIRED)
 find_package(cv_bridge REQUIRED)
+find_package(pcl_conversions REQUIRED)
 find_package(ifm3d_ros2 REQUIRED)
-find_package(PCL REQUIRED COMPONENTS common io)
+find_package(PCL REQUIRED COMPONENTS common io filters)
 find_package(ifm3d 0.17.0 CONFIG REQUIRED COMPONENTS
   camera
   framegrabber
@@ -46,8 +47,26 @@ target_link_libraries(compute_mean_depth
   ifm3d::image
 )
 
+add_executable(preprocess_data src/preprocess_data.cpp)
+ament_target_dependencies(preprocess_data
+  rclcpp
+  std_msgs
+  sensor_msgs
+  lifecycle_msgs
+  pcl_conversions
+  ifm3d_ros2
+)
+target_link_libraries(preprocess_data
+  ifm3d::camera
+  ifm3d::framegrabber
+  ifm3d::image
+  ${Boost_SYSTEM_LIBRARY}
+  ${PCL_LIBRARIES}
+)
+
 install(TARGETS
   compute_mean_depth
+  preprocess_data
   DESTINATION lib/${PROJECT_NAME})
 
 if(BUILD_TESTING)
