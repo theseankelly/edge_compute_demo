@@ -24,7 +24,7 @@ find_package(lifecycle_msgs REQUIRED)
 find_package(cv_bridge REQUIRED)
 find_package(pcl_conversions REQUIRED)
 find_package(ifm3d_ros2 REQUIRED)
-find_package(PCL REQUIRED COMPONENTS common io filters)
+find_package(PCL REQUIRED COMPONENTS common filters)
 find_package(ifm3d 0.17.0 CONFIG REQUIRED COMPONENTS
   camera
   framegrabber
