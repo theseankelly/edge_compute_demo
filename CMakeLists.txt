@@ -47,6 +47,23 @@ target_link_libraries(compute_mean_depth
   ifm3d::image
 )
 
+add_executable(compute_max_depth src/compute_max_depth.cpp)
+ament_target_dependencies(compute_max_depth
+  rclcpp
+  std_msgs
+  sensor_msgs
+  lifecycle_msgs
+  pcl_conversions
+  ifm3d_ros2
+)
+target_link_libraries(compute_max_depth
+  ifm3d::camera
+  ifm3d::framegrabber
+  ifm3d::image
+  ${Boost_SYSTEM_LIBRARY}
+  ${PCL_LIBRARIES}
+)
+
 add_executable(preprocess_data src/preprocess_data.cpp)
 ament_target_dependencies(preprocess_data
   rclcpp
@@ -66,6 +83,7 @@ target_link_libraries(preprocess_data
 
 install(TARGETS
   compute_mean_depth
+  compute_max_depth
   preprocess_data
   DESTINATION lib/${PROJECT_NAME})
 

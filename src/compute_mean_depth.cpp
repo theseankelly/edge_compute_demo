@@ -17,19 +17,45 @@ public:
   ComputeMeanDepth()
   : Node("compute_mean_depth")
   {
-    publisher_ = this->create_publisher<std_msgs::msg::Float64>("mean_depth", 10);
+    //
+    // Create a publisher for 64-bit floating point numbers
+    //
+    publisher_ = this->create_publisher<std_msgs::msg::Float64>(
+        "mean_depth", 10);
+
+    //
+    // Register to be notified when messages arrive on topic /camera/xyz_image
+    //
     subscription_ = this->create_subscription<sensor_msgs::msg::Image>(
       "/camera/xyz_image",
       rclcpp::SensorDataQoS(),
       [this](sensor_msgs::msg::Image::SharedPtr msg) {
+
+        //
+        // Convert the ROS message to an OpenCV datastructure
+        //
         auto cloud = cv_bridge::toCvShare(msg);
+
+        //
+        // Compute the average depth value (channel 0)
+        //
         cv::Mat xyz[3];
         cv::split(cloud->image, xyz);
         cv::Scalar mean_depth_value = cv::mean(xyz[0]);
 
-        RCLCPP_INFO(this->get_logger(), "Got a pointcloud (%d, %d, %d) mean_depth = %f!",
-          cloud->image.rows, cloud->image.cols, cloud->image.channels(), mean_depth_value[0]);
+        //
+        // Print some information to the screen
+        //
+        RCLCPP_INFO(this->get_logger(),
+          "Got a pointcloud (%d, %d, %d) mean_depth = %f!",
+          cloud->image.rows,
+          cloud->image.cols,
+          cloud->image.channels(),
+          mean_depth_value[0]);
 
+        //
+        // Publish the result to the topic
+        //
         auto message = std_msgs::msg::Float64();
         message.data = mean_depth_value[0];
         this->publisher_->publish(message);
